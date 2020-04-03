@@ -1,0 +1,15 @@
+.wrapper {
+  display: flex;
+  height: 100%;
+}
+
+.panel {
+  width: 20%;
+  box-sizing: border-box;
+  padding: 20px;
+  border-right: 1px solid #ced4da;
+}
+
+.map {
+  flex: 1;
+}
