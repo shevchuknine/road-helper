@@ -2,34 +2,48 @@ import React, {Component} from "react";
 import styles from "./Editor.module.scss";
 import Map from "../map/Map";
 import Input from "../../input/Input";
+import {v4} from "uuid";
+import MarkersDescription from "../markersDescription/MarkersDescription";
+
+const POINT_TYPE = {
+    draft: "draft",
+    full: "full"
+};
 
 class Editor extends Component {
-    inputRef = React.createRef();
-
     state = {
-        points: [],
-        inputVisible: false,
-        input: ""
+        points: {}
     };
 
-    onChange = input => this.setState({input});
+    onAddMarker = (coordinates) => {
+        this.setState(ps => {
+            return {
+                points: {...ps.points, [v4()]: coordinates}
+            };
+        });
+    };
 
-    onAddMarker = (point) => {
-        // this.setState(ps => ({points: ps.points.concat(point)}));
-        this.setState({inputVisible: true}, () => this.inputRef.current.focus());
+    onDeleteMarker = (id) => {
+        this.setState(ps => {
+            const points = {...ps.points};
+            delete points[id];
+
+            return {points};
+        });
     };
 
     render() {
-        const {input, inputVisible} = this.state;
+        const {points} = this.state;
         return (
             <div className={styles.wrapper}>
                 <div className={styles.panel}>
-                    {
-                        inputVisible && <Input ref={this.inputRef} value={input} onChange={this.onChange}/>
-                    }
+                    <MarkersDescription points={points}
+                                        onDelete={this.onDeleteMarker}
+                    />
                 </div>
                 <div className={styles.map}>
-                    <Map onAddMarker={this.onAddMarker}/>
+                    <Map points={points}
+                         onAddMarker={this.onAddMarker}/>
                 </div>
             </div>
         );

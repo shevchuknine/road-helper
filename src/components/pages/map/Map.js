@@ -4,34 +4,72 @@ import mapboxgl from "mapbox-gl";
 import styles from "./Map.module.scss";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import EmptyMarker from "../../icons/EmptyMarker";
-import FilledMarker from "../../icons/FilledMarker";
+import IconEmptyMarker from "../../icons/IconEmptyMarker";
+import IconFilledMarker from "../../icons/IconFilledMarker";
 
 
 const mapContainerId = "map_container";
 
 class Map extends Component {
+    state = {
+        markers: {}
+    };
+
+    _MAP;
+
     componentDidMount() {
         mapboxgl.accessToken = "pk.eyJ1Ijoic2hldmNodWtuaW5lIiwiYSI6ImNrOGhvNHdsbTAyMnYzZ3FkN2tvdnBieWcifQ.5y8TQSzYpAzUA9z_D835XA";
 
-        const MAP = new mapboxgl.Map({
+        this._MAP = new mapboxgl.Map({
             container: mapContainerId, // container id
             style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
             center: [30.52, 50.45], // starting position [lng, lat]
             zoom: 11 // starting zoom
         });
 
-        MAP.on("load", () => {
-            MAP.on("click", e => {
+        this._MAP.on("load", () => {
+            this._MAP.on("click", e => {
                 const {lngLat: {lng, lat}} = e;
-                const newPoint = new mapboxgl.Marker(this.buildEmptyMarker()).setLngLat([lng, lat]).addTo(MAP);
-                console.log(newPoint);
-                // this.props.onAddMarker(newPoint);
+                this.props.onAddMarker({lng, lat});
             });
         });
-
-
     }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (prevProps.points !== this.props.points) {
+            const {markers} = this.state;
+
+            const markerIdsToDelete = Object.keys(markers).filter(id => !this.props.points[id]);
+            const pointIdsToAdd = Object.keys(this.props.points).filter(id => !markers[id]);
+
+            const nextMarkers = {...markers};
+
+            markerIdsToDelete.forEach(id => {
+                this.removeMarkerFromMap(id);
+                delete nextMarkers[id];
+            });
+
+            pointIdsToAdd.forEach(id => {
+                nextMarkers[id] = this.addMarkerToMap(this.props.points[id]);
+            });
+
+            this.setState(ps => {
+                return {
+                    markers: nextMarkers
+                };
+            });
+        }
+    }
+
+    removeMarkerFromMap = (id) => {
+        const {markers} = this.state;
+        markers[id].remove();
+    };
+
+    addMarkerToMap = (description) => {
+        const {lng, lat} = description;
+        return new mapboxgl.Marker(this.buildFilledMarker()).setLngLat([lng, lat]).addTo(this._MAP);
+    };
 
     buildMarker = (component) => {
         const wrapper = document.createElement("div");
@@ -44,8 +82,8 @@ class Map extends Component {
         };
     };
 
-    buildEmptyMarker = () => this.buildMarker(EmptyMarker);
-    buildFilledMarker = () => this.buildMarker(FilledMarker);
+    buildEmptyMarker = () => this.buildMarker(IconEmptyMarker);
+    buildFilledMarker = () => this.buildMarker(IconFilledMarker);
 
     render() {
         return (
