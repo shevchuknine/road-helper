@@ -7,6 +7,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import IconEmptyMarker from "../../icons/IconEmptyMarker";
 import IconFilledMarker from "../../icons/IconFilledMarker";
 
+const turf = window.turf;
 
 const mapContainerId = "map_container";
 
@@ -28,6 +29,31 @@ class Map extends Component {
         });
 
         this._MAP.on("load", () => {
+            this._MAP.addSource('route', {
+                type: 'geojson',
+                data: turf.featureCollection([])
+            });
+
+            this._MAP.addLayer({
+                id: 'routeline-active',
+                type: 'line',
+                source: 'route',
+                layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#3887be',
+                    'line-width': [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        12, 3,
+                        22, 12
+                    ]
+                }
+            }, 'waterway-label');
+
             this._MAP.on("click", e => {
                 const {lngLat: {lng, lat}} = e;
                 this.props.onAddMarker({lng, lat});
@@ -57,9 +83,25 @@ class Map extends Component {
                 return {
                     markers: nextMarkers
                 };
+            }, () => {
+                fetch(this.buildRouteRequest()).then(res => res.json()).then(data => {
+                    if (data.trips) {
+                        console.log("Asd")
+                        const route = turf.featureCollection([turf.feature(data.trips[0].geometry)]);
+                        this._MAP.getSource('route').setData(route);
+                    }
+                })
             });
         }
     }
+
+    buildRouteRequest = () => {
+        const {markers} = this.state;
+        return `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${Object.values(markers).map(marker => {
+            const coords = marker.getLngLat();
+            return `${coords.lng},${coords.lat}`;
+        }).join(";")}?overview=simplified&steps=true&geometries=geojson&source=first&destination=last&roundtrip=false&access_token=${mapboxgl.accessToken}`;
+    };
 
     removeMarkerFromMap = (id) => {
         const {markers} = this.state;
