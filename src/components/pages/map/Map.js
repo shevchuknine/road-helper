@@ -6,20 +6,22 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import IconEmptyMarker from "../../icons/IconEmptyMarker";
 import IconFilledMarker from "../../icons/IconFilledMarker";
+import {fetchForwardGeocoding, fetchRoute} from "../../../api";
 
 const turf = window.turf;
 
 const mapContainerId = "map_container";
+const accessToken = "pk.eyJ1Ijoic2hldmNodWtuaW5lIiwiYSI6ImNrOGhvNHdsbTAyMnYzZ3FkN2tvdnBieWcifQ.5y8TQSzYpAzUA9z_D835XA";
 
 class Map extends Component {
     state = {
-        markers: {}
+        markers: []
     };
 
     _MAP;
 
     componentDidMount() {
-        mapboxgl.accessToken = "pk.eyJ1Ijoic2hldmNodWtuaW5lIiwiYSI6ImNrOGhvNHdsbTAyMnYzZ3FkN2tvdnBieWcifQ.5y8TQSzYpAzUA9z_D835XA";
+        mapboxgl.accessToken = accessToken;
 
         this._MAP = new mapboxgl.Map({
             container: mapContainerId, // container id
@@ -57,6 +59,7 @@ class Map extends Component {
             this._MAP.on("click", e => {
                 const {lngLat: {lng, lat}} = e;
                 this.props.onAddMarker({lng, lat});
+                fetchForwardGeocoding(accessToken, lng, lat);
             });
         });
     }
@@ -64,19 +67,24 @@ class Map extends Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (prevProps.points !== this.props.points) {
             const {markers} = this.state;
+            const {points} = this.props;
 
-            const markerIdsToDelete = Object.keys(markers).filter(id => !this.props.points[id]);
-            const pointIdsToAdd = Object.keys(this.props.points).filter(id => !markers[id]);
+            const markersToDelete = markers.filter(marker => !points.find(point => point.id === marker.id));
+            const pointsToAdd = points.filter(point => !markers.find(marker => marker.id === point.id));
 
-            const nextMarkers = {...markers};
+            let nextMarkers = markers.slice();
 
-            markerIdsToDelete.forEach(id => {
-                this.removeMarkerFromMap(id);
-                delete nextMarkers[id];
+            nextMarkers = nextMarkers.filter(marker => {
+                const toDelete = markersToDelete.find(m => m.id === marker.id);
+                if (toDelete) {
+                    this.removeMarkerFromMap(marker);
+                }
+
+                return !toDelete;
             });
 
-            pointIdsToAdd.forEach(id => {
-                nextMarkers[id] = this.addMarkerToMap(this.props.points[id]);
+            pointsToAdd.forEach(point => {
+                nextMarkers = nextMarkers.concat(this.addMarkerToMap(point));
             });
 
             this.setState(ps => {
@@ -84,33 +92,28 @@ class Map extends Component {
                     markers: nextMarkers
                 };
             }, () => {
-                fetch(this.buildRouteRequest()).then(res => res.json()).then(data => {
-                    if (data.trips) {
-                        console.log("Asd")
-                        const route = turf.featureCollection([turf.feature(data.trips[0].geometry)]);
-                        this._MAP.getSource('route').setData(route);
-                    }
-                })
+                this.fetchRoute();
             });
         }
-    }
-
-    buildRouteRequest = () => {
-        const {markers} = this.state;
-        return `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${Object.values(markers).map(marker => {
-            const coords = marker.getLngLat();
-            return `${coords.lng},${coords.lat}`;
-        }).join(";")}?overview=simplified&steps=true&geometries=geojson&source=first&destination=last&roundtrip=false&access_token=${mapboxgl.accessToken}`;
     };
 
-    removeMarkerFromMap = (id) => {
+    fetchRoute = () => {
         const {markers} = this.state;
-        markers[id].remove();
+        return fetchRoute(accessToken, markers.map(marker => marker.entity.getLngLat())).then(route => {
+            this._MAP.getSource('route').setData(route);
+        })
     };
 
-    addMarkerToMap = (description) => {
-        const {lng, lat} = description;
-        return new mapboxgl.Marker(this.buildFilledMarker()).setLngLat([lng, lat]).addTo(this._MAP);
+    removeMarkerFromMap = (marker) => {
+        marker.entity.remove();
+    };
+
+    addMarkerToMap = (point) => {
+        const {id, coordinates: {lng, lat}} = point;
+        return {
+            id,
+            entity: new mapboxgl.Marker(this.buildFilledMarker()).setLngLat([lng, lat]).addTo(this._MAP)
+        };
     };
 
     buildMarker = (component) => {

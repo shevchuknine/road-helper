@@ -9,13 +9,13 @@ class MarkersDescription extends Component {
         return (
             <div className={styles.wrapper}>
                 {
-                    Object.entries(points).map(([id, item], index) => {
+                    points.map((point, index) => {
                         return (
-                            <div className={styles.marker}>
+                            <div key={point.id} className={styles.marker}>
                                 <IconFilledMarker/>
                                 <span className={styles.name}>{index}</span>
                                 <div className={styles.cross}
-                                     onClick={() => onDelete(id)}
+                                     onClick={() => onDelete(point.id)}
                                 ><IconCross/></div>
                             </div>
                         );

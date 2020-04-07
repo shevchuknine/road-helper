@@ -5,30 +5,24 @@ import Input from "../../input/Input";
 import {v4} from "uuid";
 import MarkersDescription from "../markersDescription/MarkersDescription";
 
-const POINT_TYPE = {
-    draft: "draft",
-    full: "full"
-};
-
 class Editor extends Component {
     state = {
-        points: {}
+        points: []
     };
 
     onAddMarker = (coordinates) => {
         this.setState(ps => {
             return {
-                points: {...ps.points, [v4()]: coordinates}
+                points: ps.points.concat({id: v4(), coordinates})
             };
         });
     };
 
     onDeleteMarker = (id) => {
         this.setState(ps => {
-            const points = {...ps.points};
-            delete points[id];
-
-            return {points};
+            return {
+                points: ps.points.filter(point => point.id !== id)
+            };
         });
     };
 
