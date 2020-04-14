@@ -4,10 +4,11 @@ class InputComponent extends Component {
     onChange = e => this.props.onChange(e.target.value);
 
     render() {
-        const {value, innerRef, type = "text"} = this.props;
+        const {value, placeholder, innerRef, type = "text"} = this.props;
         return (
             <input className={"form-control"}
                    ref={innerRef}
+                   placeholder={placeholder}
                    type={type}
                    value={value} onChange={this.onChange}/>
         );

@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import styles from "./markersDescription.module.scss";
-import IconFilledMarker from "../../icons/IconFilledMarker";
-import IconCross from "../../icons/IconCross";
+import IconFilledMarker from "../../../icons/IconFilledMarker";
+import IconCross from "../../../icons/IconCross";
 
 class MarkersDescription extends Component {
     render() {

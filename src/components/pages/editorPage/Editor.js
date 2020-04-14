@@ -1,9 +1,8 @@
 import React, {Component} from "react";
 import styles from "./Editor.module.scss";
-import Map from "../map/Map";
-import Input from "../../input/Input";
+import Map from "./map/Map";
 import {v4} from "uuid";
-import MarkersDescription from "../markersDescription/MarkersDescription";
+import MarkersDescription from "./markersDescription/MarkersDescription";
 
 class Editor extends Component {
     state = {

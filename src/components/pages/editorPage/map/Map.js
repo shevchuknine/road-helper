@@ -4,9 +4,9 @@ import mapboxgl from "mapbox-gl";
 import styles from "./Map.module.scss";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import IconEmptyMarker from "../../icons/IconEmptyMarker";
-import IconFilledMarker from "../../icons/IconFilledMarker";
-import {fetchForwardGeocoding, fetchRoute} from "../../../api";
+import IconEmptyMarker from "../../../icons/IconEmptyMarker";
+import IconFilledMarker from "../../../icons/IconFilledMarker";
+import {fetchForwardGeocoding, fetchRoute} from "../../../../api/mapApi";
 
 const turf = window.turf;
 
