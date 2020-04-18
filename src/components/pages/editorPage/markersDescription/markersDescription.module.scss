@@ -9,10 +9,21 @@
 .marker {
   display: flex;
   align-items: center;
+  height: 44px;
+  flex-shrink: 0;
+  padding-right: 10px;
+
+  & > svg {
+    flex-shrink: 0;
+  }
 }
 
 .name {
   flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-right: 10px;
+  text-overflow: ellipsis;
 }
 
 .cross {

@@ -19,5 +19,14 @@ export const fetchRoute = (accessToken, coordinates) => {
 
 export const fetchForwardGeocoding = (accessToken, lng, lat) => {
     const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${accessToken}`;
-    return Api.client.get(url).then(console.log);
+    return Api.client.get(url).then(response => {
+        const {features} = response;
+        const [point] = features;
+
+        if (point.place_type.includes("poi")) {
+            return point.properties.address || point.place_name;
+        }
+
+        return point.place_name;
+    });
 };

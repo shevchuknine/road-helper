@@ -5,12 +5,14 @@ import styles from "./Map.module.scss";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import IconEmptyMarker from "../../../icons/IconEmptyMarker";
-import IconFilledMarker from "../../../icons/IconFilledMarker";
+import IconFilledMarker from "../../../icons/IconFilledMarker.svg";
 import {fetchForwardGeocoding, fetchRoute} from "../../../../api/mapApi";
 
 const turf = window.turf;
 
 const mapContainerId = "map_container";
+const markersSourceId = "obi_markers";
+const markersLayerId = "obi_markers_layer";
 const accessToken = "pk.eyJ1Ijoic2hldmNodWtuaW5lIiwiYSI6ImNrOGhvNHdsbTAyMnYzZ3FkN2tvdnBieWcifQ.5y8TQSzYpAzUA9z_D835XA";
 
 class Map extends Component {
@@ -31,104 +33,57 @@ class Map extends Component {
         });
 
         this._MAP.on("load", () => {
-            this._MAP.addSource('route', {
-                type: 'geojson',
+            this._MAP.addSource(markersSourceId, {
+                type: "geojson",
                 data: turf.featureCollection([])
             });
 
+            let image = new Image(40, 40);
+            image.onload = () => this._MAP.addImage("marker", image);
+            image.src = IconFilledMarker;
+
             this._MAP.addLayer({
-                id: 'routeline-active',
-                type: 'line',
-                source: 'route',
+                id: markersLayerId,
+                type: "symbol",
+                source: markersSourceId,
                 layout: {
-                    'line-join': 'round',
-                    'line-cap': 'round'
-                },
-                paint: {
-                    'line-color': '#3887be',
-                    'line-width': [
-                        "interpolate",
-                        ["linear"],
-                        ["zoom"],
-                        12, 3,
-                        22, 12
-                    ]
+                    "icon-image": "marker",
+                    "icon-allow-overlap": true,
+                    "icon-offset": [0, -20]
                 }
-            }, 'waterway-label');
+            });
 
             this._MAP.on("click", e => {
                 const {lngLat: {lng, lat}} = e;
-                this.props.onAddMarker({lng, lat});
-                fetchForwardGeocoding(accessToken, lng, lat);
+                fetchForwardGeocoding(accessToken, lng, lat).then(defaultName => {
+                    this.props.onAddMarker({lng, lat}, defaultName || "default name");
+                })
             });
         });
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if (prevProps.points !== this.props.points) {
-            const {markers} = this.state;
-            const {points} = this.props;
-
-            const markersToDelete = markers.filter(marker => !points.find(point => point.id === marker.id));
-            const pointsToAdd = points.filter(point => !markers.find(marker => marker.id === point.id));
-
-            let nextMarkers = markers.slice();
-
-            nextMarkers = nextMarkers.filter(marker => {
-                const toDelete = markersToDelete.find(m => m.id === marker.id);
-                if (toDelete) {
-                    this.removeMarkerFromMap(marker);
-                }
-
-                return !toDelete;
-            });
-
-            pointsToAdd.forEach(point => {
-                nextMarkers = nextMarkers.concat(this.addMarkerToMap(point));
-            });
-
-            this.setState(ps => {
+    buildSourceData = (points) => {
+        return {
+            type: "FeatureCollection",
+            features: points.map(point => {
+                const {coordinates: {lng, lat}} = point;
                 return {
-                    markers: nextMarkers
+                    type: "Feature",
+                    geometry: {
+                        type: "Point",
+                        coordinates: [lng, lat]
+                    }
                 };
-            }, () => {
-                this.fetchRoute();
-            });
+            })
+        };
+    };
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        const {points} = this.props;
+        if (prevProps.points !== points) {
+            this._MAP.getSource(markersSourceId).setData(this.buildSourceData(points));
         }
-    };
-
-    fetchRoute = () => {
-        const {markers} = this.state;
-        return fetchRoute(accessToken, markers.map(marker => marker.entity.getLngLat())).then(route => {
-            this._MAP.getSource('route').setData(route);
-        })
-    };
-
-    removeMarkerFromMap = (marker) => {
-        marker.entity.remove();
-    };
-
-    addMarkerToMap = (point) => {
-        const {id, coordinates: {lng, lat}} = point;
-        return {
-            id,
-            entity: new mapboxgl.Marker(this.buildFilledMarker()).setLngLat([lng, lat]).addTo(this._MAP)
-        };
-    };
-
-    buildMarker = (component) => {
-        const wrapper = document.createElement("div");
-        wrapper.classList = styles.marker;
-        ReactDOM.render(React.createElement(component), wrapper);
-
-        return {
-            element: wrapper,
-            offset: [0, -18]
-        };
-    };
-
-    buildEmptyMarker = () => this.buildMarker(IconEmptyMarker);
-    buildFilledMarker = () => this.buildMarker(IconFilledMarker);
+    }
 
     render() {
         return (
