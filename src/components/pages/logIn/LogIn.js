@@ -21,7 +21,7 @@ class LogIn extends Component {
         logIn(email, password).then(() => {
             const {history} = this.props;
 
-            history.replace(Page.app);
+            history.replace(Page.main_packages);
         }).catch((error) => {
             this.setState({error});
         });

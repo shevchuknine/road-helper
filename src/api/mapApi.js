@@ -4,7 +4,7 @@ const turf = window.turf;
 
 export const fetchRoute = (accessToken, coordinates) => {
     const url = `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${coordinates.map(coordinate => {
-        return `${coordinate.lng},${coordinate.lat}`;
+        return `${coordinate.lon},${coordinate.lat}`;
     }).join(";")}?overview=simplified&steps=true&geometries=geojson&source=first&destination=last&roundtrip=false&access_token=${accessToken}`;
 
     return Api.client.get(url).then(response => {
@@ -17,8 +17,8 @@ export const fetchRoute = (accessToken, coordinates) => {
     });
 };
 
-export const fetchForwardGeocoding = (accessToken, lng, lat) => {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${accessToken}`;
+export const fetchForwardGeocoding = (accessToken, lon, lat) => {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${accessToken}`;
     return Api.client.get(url).then(response => {
         const {features} = response;
         const [point] = features;

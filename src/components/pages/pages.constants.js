@@ -1,6 +1,8 @@
 export const Page = {
     signUp: "/signup",
     logIn: "/login",
-    app: "/app",
+    main: "/main",
+    main_packages: "/main/packages",
+    main_editor: "/main/editor",
     root: "/"
 };

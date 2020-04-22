@@ -21,9 +21,9 @@ class Button extends Component {
     };
 
     render() {
-        const {text, type, disabled} = this.props;
+        const {text, type, className, disabled} = this.props;
         return (
-            <div className={cx(styles.wrapper, "btn", type, disabled ? "disabled" : undefined)} onClick={this.onClick}>
+            <div className={cx(styles.wrapper, className, "btn", type, disabled ? "disabled" : undefined)} onClick={this.onClick}>
                 {text}
             </div>
         );

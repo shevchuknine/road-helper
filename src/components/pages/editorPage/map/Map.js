@@ -16,10 +16,6 @@ const markersLayerId = "obi_markers_layer";
 const accessToken = "pk.eyJ1Ijoic2hldmNodWtuaW5lIiwiYSI6ImNrOGhvNHdsbTAyMnYzZ3FkN2tvdnBieWcifQ.5y8TQSzYpAzUA9z_D835XA";
 
 class Map extends Component {
-    state = {
-        markers: []
-    };
-
     _MAP;
 
     componentDidMount() {
@@ -28,13 +24,14 @@ class Map extends Component {
         this._MAP = new mapboxgl.Map({
             container: mapContainerId, // container id
             style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
-            center: [30.52, 50.45], // starting position [lng, lat]
+            center: [30.52, 50.45], // starting position [lon, lat]
             zoom: 11 // starting zoom
         });
 
         this._MAP.on("load", () => {
             this._MAP.addSource(markersSourceId, {
                 type: "geojson",
+                //todo: console.log(turf.featureCollection([]))
                 data: turf.featureCollection([])
             });
 
@@ -54,9 +51,9 @@ class Map extends Component {
             });
 
             this._MAP.on("click", e => {
-                const {lngLat: {lng, lat}} = e;
-                fetchForwardGeocoding(accessToken, lng, lat).then(defaultName => {
-                    this.props.onAddMarker({lng, lat}, defaultName || "default name");
+                const {lngLat: {lng: lon, lat}} = e;
+                fetchForwardGeocoding(accessToken, lon, lat).then(defaultName => {
+                    this.props.onAddMarker({lon, lat}, defaultName || "default name");
                 })
             });
         });
@@ -66,12 +63,12 @@ class Map extends Component {
         return {
             type: "FeatureCollection",
             features: points.map(point => {
-                const {coordinates: {lng, lat}} = point;
+                const {coordinates: {lon, lat}} = point;
                 return {
                     type: "Feature",
                     geometry: {
                         type: "Point",
-                        coordinates: [lng, lat]
+                        coordinates: [lon, lat]
                     }
                 };
             })
@@ -81,14 +78,20 @@ class Map extends Component {
     componentDidUpdate(prevProps, prevState, snapshot) {
         const {points} = this.props;
         if (prevProps.points !== points) {
-            this._MAP.getSource(markersSourceId).setData(this.buildSourceData(points));
+            const tryToSetData = () => {
+                if (this._MAP.loaded()) {
+                    this._MAP.getSource(markersSourceId).setData(this.buildSourceData(points));
+                } else {
+                    setTimeout(tryToSetData, 1000);
+                }
+            };
+
+            tryToSetData();
         }
     }
 
     render() {
-        return (
-            <div className={styles.wrapper} id={mapContainerId}></div>
-        );
+        return <div className={styles.wrapper} id={mapContainerId}></div>;
     }
 }
 

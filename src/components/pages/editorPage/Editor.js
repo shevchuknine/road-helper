@@ -4,19 +4,23 @@ import Map from "./map/Map";
 import {v4} from "uuid";
 import MarkersDescription from "./markersDescription/MarkersDescription";
 import {fetchForwardGeocoding} from "../../../api/mapApi";
+import Input from "../../form/input/Input";
+import PackageDescription from "./packageDescription/PackageDescription";
+import {getMarkers, getPackage, putMarker} from "../../../api/dataApi";
+
 
 class Editor extends Component {
     state = {
+        pack: {},
         points: []
     };
 
     onAddMarker = (coordinates, name) => {
-        const newPointId = v4();
-        this.setState(ps => {
-            return {
-                points: ps.points.concat({id: newPointId, coordinates, name})
-            };
-        });
+        const {match: {params: {id: packId}}} = this.props;
+        const newPoint = {id: v4(), coordinates, name};
+
+        this.setState(ps => ({points: ps.points.concat(newPoint)}));
+        putMarker(packId, newPoint);
     };
 
     onDeleteMarker = (id) => {
@@ -35,11 +39,23 @@ class Editor extends Component {
 
     onPointNameChange = (id, value) => this.onPointPropertyChange("name", id, value);
 
+    componentDidMount() {
+        const {match: {params: {id}}} = this.props;
+
+        Promise.all([
+            getPackage(id),
+            getMarkers(id)
+        ]).then(([pack, points]) => {
+            this.setState({pack, points});
+        });
+    }
+
     render() {
-        const {points} = this.state;
+        const {points, pack} = this.state;
         return (
             <div className={styles.wrapper}>
                 <div className={styles.panel}>
+                    <PackageDescription pack={pack}/>
                     <MarkersDescription points={points}
                                         onDelete={this.onDeleteMarker}
                                         onPointNameChange={this.onPointNameChange}

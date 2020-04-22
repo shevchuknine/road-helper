@@ -1,10 +1,12 @@
-import React, {Component, Fragment} from "react";
+import React, {Component, createRef, Fragment} from "react";
 import styles from "./markersDescription.module.scss";
 import IconFilledMarker from "../../../icons/IconFilledMarker";
 import IconCross from "../../../icons/IconCross";
 import Input from "../../../form/input/Input";
 
 class MarkersDescription extends Component {
+    scrollBar = createRef();
+
     state = MarkersDescription.getInitialState();
 
     static getInitialState = () => {
@@ -15,9 +17,15 @@ class MarkersDescription extends Component {
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         const {points} = this.props;
-        if (points !== prevProps.points && points.length > prevProps.points.length) {
-            const {id, name} = points.find(point => prevProps.points.find(prevPoint => prevPoint.id === point.id) === undefined);
-            this.setState({editedPoint: {id, name}});
+        if (points !== prevProps.points) {
+            // scroll to the bottom
+            const wrapper = this.scrollBar.current;
+            wrapper.scrollTop = wrapper.scrollHeight;
+
+            // if (points.length > prevProps.points.length) {
+            //     const {id, name} = points.find(point => prevProps.points.find(prevPoint => prevPoint.id === point.id) === undefined);
+            //     this.setState({editedPoint: {id, name}});
+            // }
         }
     }
 
@@ -40,7 +48,7 @@ class MarkersDescription extends Component {
             {editedPoint} = this.state;
 
         return (
-            <div className={styles.wrapper}>
+            <div className={styles.wrapper} ref={this.scrollBar}>
                 {
                     points.map((point, index) => {
                         const {id, name} = point;

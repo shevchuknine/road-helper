@@ -9,7 +9,12 @@ class InputComponent extends Component {
         this.ref = props.innerRef || React.createRef();
     }
 
-    onChange = e => this.props.onChange(e.target.value);
+    onChange = e => {
+        const {onChange} = this.props;
+
+        onChange && onChange(e.target.value);
+    };
+
     onEnterHandler = (event) => {
         const {code} = event, {onEnter} = this.props;
 
@@ -20,7 +25,7 @@ class InputComponent extends Component {
 
     componentDidMount() {
         let element = this.ref.current;
-        element.focus();
+        // element.focus();
         element.addEventListener("keydown", this.onEnterHandler);
     }
 
@@ -30,7 +35,7 @@ class InputComponent extends Component {
     }
 
     render() {
-        const {value, placeholder, innerRef, type = "text"} = this.props;
+        const {value, placeholder, type = "text"} = this.props;
         return (
             <input className={cx(styles.wrapper, "form-control")}
                    ref={this.ref}
