@@ -1,0 +1,48 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+
+  max-height: calc(100% - 38px);
+  overflow: auto;
+}
+
+.marker {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding-right: 10px;
+
+  & > svg {
+    flex-shrink: 0;
+  }
+
+  & > .data {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-grow: 1;
+    margin-right: 10px;
+    overflow: hidden;
+
+    & > span {
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    & > .address {
+      color: gray;
+    }
+  }
+}
+
+
+
+.cross {
+  cursor: pointer;
+}
+
+.marker + .marker {
+  margin-top: 10px;
+}

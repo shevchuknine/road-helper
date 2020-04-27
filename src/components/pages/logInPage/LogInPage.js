@@ -3,9 +3,8 @@ import styles from "../../form/Form.module.scss";
 import Input from "../../form/input/Input";
 import Button from "../../form/button/Button";
 import {logIn} from "../../../api/authApi";
-import {Page} from "../pages.constants";
 
-class LogIn extends Component {
+class LogInPage extends Component {
     state = {
         error: null,
         email: "",
@@ -21,7 +20,7 @@ class LogIn extends Component {
         logIn(email, password).then(() => {
             const {history} = this.props;
 
-            history.replace(Page.main_packages);
+            history.replace("/main/packages");
         }).catch((error) => {
             this.setState({error});
         });
@@ -51,4 +50,4 @@ class LogIn extends Component {
     }
 };
 
-export default LogIn;
+export default LogInPage;

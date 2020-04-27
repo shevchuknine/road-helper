@@ -2,18 +2,17 @@ import React, {Component} from "react";
 import {withRouter} from "react-router";
 import styles from "./Header.module.scss";
 import Button, {buttonType} from "../form/button/Button";
-import {Page} from "../pages/pages.constants";
 import {checkCookie, Cookie} from "../../helpers/cookie";
 import {signOut} from "../../api/authApi";
 
 class Header extends Component {
     goToSignUp = () => {
-        this.props.history.push(Page.signUp);
+        this.props.history.push("/signup");
         this.forceUpdate();
     };
 
     goToLogIn = () => {
-        this.props.history.push(Page.logIn);
+        this.props.history.push("/login");
         this.forceUpdate();
     };
 
@@ -31,8 +30,8 @@ class Header extends Component {
                         </div>
                     ) : (
                         <div className={styles.buttons}>
-                            {pathname !== Page.signUp && <Button text={"Sign Up"} type={buttonType.light} onClick={this.goToSignUp}/>}
-                            {pathname !== Page.logIn && <Button text={"Log In"} type={buttonType.light} onClick={this.goToLogIn}/>}
+                            {pathname !== "/signup" && <Button text={"Sign Up"} type={buttonType.light} onClick={this.goToSignUp}/>}
+                            {pathname !== "/login" && <Button text={"Log In"} type={buttonType.light} onClick={this.goToLogIn}/>}
                         </div>
                     )
                 }

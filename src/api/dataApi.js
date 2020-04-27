@@ -19,7 +19,7 @@ export const getPackage = (id) => {
         (response) => {
             const {res} = response;
             if (res) {
-                return res;
+                return {...res, id};
             }
         }
     )
@@ -30,6 +30,10 @@ export const putPackage = (id, data) => {
     return Api.client.put(`http://localhost:5000/api/v1/pack/${id}`, {
         name
     });
+};
+
+export const removePackage = (id) => {
+    return Api.client.delete(`http://localhost:5000/api/v1/pack/${id}`);
 };
 
 export const getMarkers = (id) => {
@@ -47,13 +51,18 @@ export const getMarkers = (id) => {
 };
 
 export const putMarker = (packId, data) => {
-    const {id, name, coordinates: {lon, lat}} = data;
+    const {id, name, coordinates: {lon, lat}, address} = data;
     return Api.client.put(`http://localhost:5000/api/v1/pack/${packId}/mark/${id}`, {
         name,
+        address,
         type: "default",
         loc: {
             lon,
             lat
         }
     })
+};
+
+export const deleteMarker = (packId, id) => {
+    return Api.client.delete(`http://localhost:5000/api/v1/pack/${packId}/mark/${id}`)
 };

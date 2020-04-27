@@ -1,7 +1,6 @@
 import axios from "axios";
 import {Cookie, getCookie} from "../helpers/cookie";
 import history from "../helpers/history";
-import {Page} from "../components/pages/pages.constants";
 
 class ApiClient {
     axios;
@@ -17,7 +16,7 @@ class ApiClient {
             const {response: {data, status}} = error;
 
             if (status === 401) {
-                history.replace(Page.logIn);
+                history.replace("/login");
             }
 
             return Promise.reject(data);

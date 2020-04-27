@@ -1,4 +1,4 @@
-@import "../../../styles/variables";
+@import "../../../../styles/variables";
 
 .wrapper {
   padding: 20px;
@@ -6,6 +6,7 @@
 }
 
 .package {
+  position: relative;
   display: inline-block;
   width: 140px;
   border: 1px solid $border-color;
@@ -13,15 +14,30 @@
   cursor: pointer;
   margin-bottom: 10px;
 
+  &:hover > .remove{
+    display: flex;
+  }
+
   & + .package {
     margin-left: 10px;
+  }
+
+  & > .remove {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    background-color: white;
+    justify-content: center;
+    align-items: center;
   }
 
   & > .icon {
     width: 100%;
     height: 100px;
-    background: url("../../icons/package_background.png");
-    background-size: cover;
+    overflow: hidden;
   }
 
   & > .data {

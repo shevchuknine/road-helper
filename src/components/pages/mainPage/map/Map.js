@@ -6,20 +6,19 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import IconEmptyMarker from "../../../icons/IconEmptyMarker";
 import IconFilledMarker from "../../../icons/IconFilledMarker.svg";
-import {fetchForwardGeocoding, fetchRoute} from "../../../../api/mapApi";
+import {ACCESS_TOKEN, fetchForwardGeocoding, fetchRoute} from "../../../../api/mapApi";
 
 const turf = window.turf;
 
 const mapContainerId = "map_container";
 const markersSourceId = "obi_markers";
 const markersLayerId = "obi_markers_layer";
-const accessToken = "pk.eyJ1Ijoic2hldmNodWtuaW5lIiwiYSI6ImNrOGhvNHdsbTAyMnYzZ3FkN2tvdnBieWcifQ.5y8TQSzYpAzUA9z_D835XA";
 
 class Map extends Component {
     _MAP;
 
     componentDidMount() {
-        mapboxgl.accessToken = accessToken;
+        mapboxgl.accessToken = ACCESS_TOKEN;
 
         this._MAP = new mapboxgl.Map({
             container: mapContainerId, // container id
@@ -52,8 +51,8 @@ class Map extends Component {
 
             this._MAP.on("click", e => {
                 const {lngLat: {lng: lon, lat}} = e;
-                fetchForwardGeocoding(accessToken, lon, lat).then(defaultName => {
-                    this.props.onAddMarker({lon, lat}, defaultName || "default name");
+                fetchForwardGeocoding(lon, lat).then(address => {
+                    this.props.onAddMarker({lon, lat}, address || "unknown address");
                 })
             });
         });

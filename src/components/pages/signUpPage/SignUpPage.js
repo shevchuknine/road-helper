@@ -3,9 +3,8 @@ import styles from "../../form/Form.module.scss";
 import Input from "../../form/input/Input";
 import Button from "../../form/button/Button";
 import {signUp} from "../../../api/authApi";
-import {Page} from "../pages.constants";
 
-class SignUp extends Component {
+class SignUpPage extends Component {
     state = {
         error: null,
         email: "",
@@ -21,7 +20,7 @@ class SignUp extends Component {
         signUp(email, password).then(() => {
             const {history} = this.props;
 
-            history.replace(Page.logIn);
+            history.replace("/login");
         }).catch((error) => this.setState({error}));
     };
 
@@ -49,4 +48,4 @@ class SignUp extends Component {
     }
 };
 
-export default SignUp;
+export default SignUpPage;

@@ -1,0 +1,15 @@
+@import "../../../styles/variables";
+
+.wrapper {
+  padding: 20px;
+  min-width: 400px;
+}
+
+.content {
+  margin-bottom: 20px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+}
