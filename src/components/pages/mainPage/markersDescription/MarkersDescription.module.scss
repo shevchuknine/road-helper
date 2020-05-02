@@ -2,8 +2,14 @@
   display: flex;
   flex-direction: column;
 
-  max-height: calc(100% - 38px);
+  height: 50%;
   overflow: auto;
+
+  border: 3px solid black;
+
+  &:global(.active) {
+    border-color: lightskyblue;
+  }
 }
 
 .marker {
@@ -37,10 +43,9 @@
   }
 }
 
-
-
-.cross {
+.button {
   cursor: pointer;
+  padding: 5px;
 }
 
 .marker + .marker {

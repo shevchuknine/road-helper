@@ -4,15 +4,18 @@ import mapboxgl from "mapbox-gl";
 import styles from "./Map.module.scss";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import IconEmptyMarker from "../../../icons/IconEmptyMarker";
 import IconFilledMarker from "../../../icons/IconFilledMarker.svg";
+import IconRouteMarker from "../../../icons/IconRouteMarker.svg";
 import {ACCESS_TOKEN, fetchForwardGeocoding, fetchRoute} from "../../../../api/mapApi";
 
 const turf = window.turf;
-
 const mapContainerId = "map_container";
 const markersSourceId = "obi_markers";
 const markersLayerId = "obi_markers_layer";
+const markersRouteSourceId = "obi_markers_route";
+const markersRouteLayerId = "obi_markers_route_layer";
+const routeSourceId = "obi_route";
+const routeLayerId = "obi_route_layer";
 
 class Map extends Component {
     _MAP;
@@ -28,32 +31,61 @@ class Map extends Component {
         });
 
         this._MAP.on("load", () => {
-            this._MAP.addSource(markersSourceId, {
-                type: "geojson",
-                //todo: console.log(turf.featureCollection([]))
+            const buildSource = (name, url, layerId, sourceId) => {
+                this._MAP.addSource(sourceId, {
+                    type: "geojson",
+                    data: turf.featureCollection([])
+                });
+
+                let image = new Image(40, 40);
+                image.onload = () => this._MAP.addImage(name, image);
+                image.src = url;
+
+                this._MAP.addLayer({
+                    id: layerId,
+                    type: "symbol",
+                    source: sourceId,
+                    layout: {
+                        "icon-image": name,
+                        "icon-allow-overlap": true,
+                        "icon-offset": [0, -20]
+                    }
+                });
+            };
+
+            buildSource("marker", IconFilledMarker, markersLayerId, markersSourceId);
+            buildSource("marker-route", IconRouteMarker, markersRouteLayerId, markersRouteSourceId);
+
+            // route
+            this._MAP.addSource(routeSourceId, {
+                type: 'geojson',
                 data: turf.featureCollection([])
             });
 
-            let image = new Image(40, 40);
-            image.onload = () => this._MAP.addImage("marker", image);
-            image.src = IconFilledMarker;
-
             this._MAP.addLayer({
-                id: markersLayerId,
-                type: "symbol",
-                source: markersSourceId,
+                id: routeLayerId,
+                type: 'line',
+                source: routeSourceId,
                 layout: {
-                    "icon-image": "marker",
-                    "icon-allow-overlap": true,
-                    "icon-offset": [0, -20]
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#3887be',
+                    'line-width': [
+                        "interpolate",
+                        ["linear"],
+                        ["zoom"],
+                        12, 3,
+                        22, 12
+                    ]
                 }
-            });
+            }, 'waterway-label');
+            // end route
 
             this._MAP.on("click", e => {
                 const {lngLat: {lng: lon, lat}} = e;
-                fetchForwardGeocoding(lon, lat).then(address => {
-                    this.props.onAddMarker({lon, lat}, address || "unknown address");
-                })
+                this.props.onAddMarker(lon, lat);
             });
         });
     }
@@ -62,7 +94,7 @@ class Map extends Component {
         return {
             type: "FeatureCollection",
             features: points.map(point => {
-                const {coordinates: {lon, lat}} = point;
+                const {loc: {lon, lat}} = point;
                 return {
                     type: "Feature",
                     geometry: {
@@ -75,11 +107,13 @@ class Map extends Component {
     };
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const {points} = this.props;
-        if (prevProps.points !== points) {
+        const {points, routePoints, navi} = this.props;
+        if (prevProps.points !== points || prevProps.routePoints !== routePoints || prevProps.navi !== navi) {
             const tryToSetData = () => {
                 if (this._MAP.loaded()) {
                     this._MAP.getSource(markersSourceId).setData(this.buildSourceData(points));
+                    this._MAP.getSource(markersRouteSourceId).setData(this.buildSourceData(routePoints));
+                    this._MAP.getSource(routeSourceId).setData(turf.featureCollection([turf.feature({coordinates: navi, type: "LineString"})]));
                 } else {
                     setTimeout(tryToSetData, 1000);
                 }

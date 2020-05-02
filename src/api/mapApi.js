@@ -12,11 +12,13 @@ export const fetchRoute = (coordinates) => {
     return Api.client.get(url).then(response => {
         const {trips} = response;
         if (trips) {
-            return turf.featureCollection([turf.feature(trips[0].geometry)]);
+            return trips[0].geometry.coordinates;
         }
 
         return [];
-    });
+    }).catch(() => {
+        return [];
+    })
 };
 
 export const fetchForwardGeocoding = (lon, lat) => {

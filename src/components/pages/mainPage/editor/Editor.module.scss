@@ -10,6 +10,10 @@
   border-right: 1px solid #ced4da;
 }
 
+.descriptions {
+  height: calc(100% - 34px);
+}
+
 .map {
   flex: 1;
 }

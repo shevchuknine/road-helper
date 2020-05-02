@@ -48,7 +48,6 @@ class Packages extends Component {
 
     componentDidMount() {
         getPackages().then((packages) => {
-            // console.log(packages);
             this.setState({packages});
         });
     }

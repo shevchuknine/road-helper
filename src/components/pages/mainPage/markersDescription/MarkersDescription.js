@@ -3,8 +3,15 @@ import styles from "./MarkersDescription.module.scss";
 import IconFilledMarker from "../../../icons/IconFilledMarker";
 import IconCross from "../../../icons/IconCross";
 import Input from "../../../form/input/Input";
+import IconEdit from "../../../icons/IconEdit";
+import cx from "classnames";
+import IconRouteMarker from "../../../icons/IconRouteMarker";
 
 class MarkersDescription extends Component {
+    static defaultProps = {
+        points: []
+    };
+
     scrollBar = createRef();
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -15,23 +22,35 @@ class MarkersDescription extends Component {
         }
     }
 
+    buildIcon = () => {
+        const {type} = this.props;
+
+        if (type === "poi") {
+            return <IconFilledMarker/>;
+        }
+
+        if (type === "route") {
+            return <IconRouteMarker/>;
+        }
+    };
+
     render() {
-        const {points, onDelete} = this.props;
+        const {points, onEdit, onDelete, type, activeStorage, makeActive} = this.props;
 
         return (
-            <div className={styles.wrapper} ref={this.scrollBar}>
+            <div className={cx(styles.wrapper, activeStorage === type && "active")} ref={this.scrollBar} onClick={makeActive}>
                 {
                     points.map((point, index) => {
                         const {id, name, address} = point;
                         return (
                             <div key={id} className={styles.marker}>
-                                <IconFilledMarker/>
+                                {this.buildIcon()}
                                 <div className={styles.data}>
                                     <span className={styles.name}>{name}</span>
                                     <span className={styles.address}>{address}</span>
                                 </div>
-                                <div className={styles.cross} onClick={() => onDelete(id)}
-                                ><IconCross/></div>
+                                {onEdit && <div className={styles.button} onClick={() => onEdit(point)}><IconEdit/></div>}
+                                <div className={styles.button} onClick={() => onDelete(point)}><IconCross/></div>
                             </div>
                         );
                     })

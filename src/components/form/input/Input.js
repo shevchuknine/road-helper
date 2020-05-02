@@ -35,9 +35,10 @@ class InputComponent extends Component {
     }
 
     render() {
-        const {value, placeholder, type = "text"} = this.props;
+        const {value, placeholder, disabled, type = "text"} = this.props;
         return (
             <input className={cx(styles.wrapper, "form-control")}
+                   disabled={disabled}
                    ref={this.ref}
                    placeholder={placeholder}
                    type={type}

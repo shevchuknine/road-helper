@@ -22,7 +22,7 @@ class Popup extends Component {
         return (
             <Modal style={style}
                    onRequestClose={onClose}
-                   isOpen={isOpen}
+                   isOpen={true}
             >
                 <div className={styles.wrapper}>
                     <div className={styles.content}>
