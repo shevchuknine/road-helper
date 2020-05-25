@@ -12,6 +12,7 @@ import ConfirmationPopup from "../../../popups/confirmationPopup/ConfirmationPop
 import PointEditPopup from "../../../popups/pointEditPopup/PointEditPopup";
 import PackEditPopup from "../../../popups/packEditPopup/PackEditPopup";
 import RouteDescription from "../routeDescription/RouteDescription";
+import PoiPanel from "../poiPanel/PoiPanel";
 
 const sameCoordsPointCheck = (points, lon, lat) => {
     return points.find(point => {
@@ -22,6 +23,7 @@ const sameCoordsPointCheck = (points, lon, lat) => {
 
 class Editor extends Component {
     state = {
+        poi: [], // левая колонка, хранятся активные типы POI, которые оторажаются на карте
         activeStorage: "poi",
         pack: {},
         points: [],
@@ -185,10 +187,29 @@ class Editor extends Component {
         );
     };
 
+    updatePoi = id => {
+        this.setState(ps => {
+            const prevPoi = ps.poi;
+            return {
+                poi: prevPoi.includes(id) ? prevPoi.filter(i => i !== id) : [...prevPoi, id]
+            };
+        })
+    };
+
     render() {
-        const {points, pack, route: {points: routePoints = [], navi = []}, activeStorage} = this.state;
+        const {points, pack, poi, route: {points: routePoints = [], navi = []}, activeStorage} = this.state;
         return (
             <div className={styles.wrapper}>
+                <div className={styles.poiPanel}>
+                    <PoiPanel updatePoi={this.updatePoi}/>
+                </div>
+                <div className={styles.map}>
+                    <Map points={points}
+                         navi={navi}
+                         routePoints={routePoints}
+                         poi={poi}
+                         onAddMarker={this.onAddMarker}/>
+                </div>
                 <div className={styles.panel}>
                     <PackageDescription pack={pack}
                                         onEdit={this.openPackEditPopup}
@@ -208,12 +229,6 @@ class Editor extends Component {
                                             makeActive={this.makeActive("route")}
                         />
                     </div>
-                </div>
-                <div className={styles.map}>
-                    <Map points={points}
-                         navi={navi}
-                         routePoints={routePoints}
-                         onAddMarker={this.onAddMarker}/>
                 </div>
                 {this.renderPointsAmountPopup()}
                 {this.renderPointEditPopup()}

@@ -6,66 +6,98 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import IconFilledMarker from "../../../icons/IconFilledMarker.svg";
 import IconRouteMarker from "../../../icons/IconRouteMarker.svg";
+import IconCarrot from "../../../icons/IconCarrot.svg";
+import apple from "../../../icons/apple.svg";
 import {ACCESS_TOKEN, fetchForwardGeocoding, fetchRoute} from "../../../../api/mapApi";
 
 const turf = window.turf;
 const mapContainerId = "map_container";
-const markersSourceId = "obi_markers";
-const markersLayerId = "obi_markers_layer";
-const markersRouteSourceId = "obi_markers_route";
-const markersRouteLayerId = "obi_markers_route_layer";
-const routeSourceId = "obi_route";
-const routeLayerId = "obi_route_layer";
+export const mapItems = {
+    poiMarker: {source: "OBI_poi-marker_source", layer: "OBI_poi-marker_layer"},
+    routeMarker: {source: "OBI_route-marker_source", layer: "OBI_route-marker_layer"},
+    route: {source: "OBI_route_source", layer: "OBI_route_layer"},
+    restaurant: {layer: "OBI_restaurant_layer"},
+    cafe: {layer: "OBI_cafe_layer"},
+};
 
 class Map extends Component {
     _MAP;
+
+    addSource = (sourceId) => {
+        // only when map loaded
+        this._MAP.addSource(sourceId, {
+            type: "geojson",
+            data: turf.featureCollection([])
+        });
+    };
+
+    loadImage = (name, url) => {
+        // only when map loaded
+        let image = new Image(40, 40);
+        image.onload = () => this._MAP.addImage(name, image);
+        image.src = url;
+
+        return name;
+    };
+
+    addLayer = (id, imageName, additionalData = {}) => {
+        this._MAP.addLayer({
+            id,
+            type: "symbol",
+            layout: {
+                "icon-image": imageName,
+                "icon-allow-overlap": true,
+                "icon-offset": [0, -20]
+            },
+            ...additionalData
+        });
+    };
 
     componentDidMount() {
         mapboxgl.accessToken = ACCESS_TOKEN;
 
         this._MAP = new mapboxgl.Map({
             container: mapContainerId, // container id
-            style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
+            style: 'mapbox://styles/mapbox/light-v10', // stylesheet location
             center: [30.52, 50.45], // starting position [lon, lat]
             zoom: 11 // starting zoom
         });
 
+        // todo: remove
+        window.map = this._MAP;
+
         this._MAP.on("load", () => {
-            const buildSource = (name, url, layerId, sourceId) => {
-                this._MAP.addSource(sourceId, {
-                    type: "geojson",
-                    data: turf.featureCollection([])
-                });
+            // наши poi точки (красные)
+            this.addSource(mapItems.poiMarker.source);
+            this.addLayer(mapItems.poiMarker.layer, this.loadImage("poiMarker", IconFilledMarker), {source: mapItems.poiMarker.source});
 
-                let image = new Image(40, 40);
-                image.onload = () => this._MAP.addImage(name, image);
-                image.src = url;
+            // сиине маркеры (маршрута)
+            this.addSource(mapItems.routeMarker.source);
+            this.addLayer(mapItems.routeMarker.layer, this.loadImage("routeMarker", IconRouteMarker), {source: mapItems.routeMarker.source});
 
-                this._MAP.addLayer({
-                    id: layerId,
-                    type: "symbol",
-                    source: sourceId,
-                    layout: {
-                        "icon-image": name,
-                        "icon-allow-overlap": true,
-                        "icon-offset": [0, -20]
-                    }
-                });
-            };
+            // рестораны
+            this.addLayer(mapItems.restaurant.layer, this.loadImage("restaurantMarker", IconCarrot), {
+                source: "composite",
+                "source-layer": "poi_label",
+                filter: ["==", "type", "Restaurant"]
+            });
+            this._MAP.setLayoutProperty(mapItems.restaurant.layer, "visibility", "none");
 
-            buildSource("marker", IconFilledMarker, markersLayerId, markersSourceId);
-            buildSource("marker-route", IconRouteMarker, markersRouteLayerId, markersRouteSourceId);
+            // кафе
+            this.addLayer(mapItems.cafe.layer, this.loadImage("cafeMarker", apple), {
+                source: "composite",
+                "source-layer": "poi_label",
+                filter: ["==", "type", "Cafe"],
+                visibility: "none"
+            });
+            this._MAP.setLayoutProperty(mapItems.cafe.layer, "visibility", "none");
 
             // route
-            this._MAP.addSource(routeSourceId, {
-                type: 'geojson',
-                data: turf.featureCollection([])
-            });
-
+            this.addSource(mapItems.route.source);
             this._MAP.addLayer({
-                id: routeLayerId,
+                id: mapItems.route.layer,
                 type: 'line',
-                source: routeSourceId,
+                source: mapItems.route.source,
                 layout: {
                     'line-join': 'round',
                     'line-cap': 'round'
@@ -107,19 +139,24 @@ class Map extends Component {
     };
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const {points, routePoints, navi} = this.props;
+        const {points, routePoints, navi, poi} = this.props;
         if (prevProps.points !== points || prevProps.routePoints !== routePoints || prevProps.navi !== navi) {
             const tryToSetData = () => {
                 if (this._MAP.loaded()) {
-                    this._MAP.getSource(markersSourceId).setData(this.buildSourceData(points));
-                    this._MAP.getSource(markersRouteSourceId).setData(this.buildSourceData(routePoints));
-                    this._MAP.getSource(routeSourceId).setData(turf.featureCollection([turf.feature({coordinates: navi, type: "LineString"})]));
+                    this._MAP.getSource(mapItems.poiMarker.source).setData(this.buildSourceData(points));
+                    this._MAP.getSource(mapItems.routeMarker.source).setData(this.buildSourceData(routePoints));
+                    this._MAP.getSource(mapItems.route.source).setData(turf.featureCollection([turf.feature({coordinates: navi, type: "LineString"})]));
                 } else {
                     setTimeout(tryToSetData, 1000);
                 }
             };
 
             tryToSetData();
+        }
+
+        if (prevProps.poi !== poi) {
+            prevProps.poi.forEach(i => this._MAP.setLayoutProperty(i, "visibility", "none"));
+            poi.forEach(i => this._MAP.setLayoutProperty(i, "visibility", "visible"));
         }
     }
 
