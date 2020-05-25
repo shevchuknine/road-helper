@@ -1,8 +1,8 @@
-import Api from "./api";
+import Api, {API_PATH} from "./api";
 import {Cookie, deleteCookie, setCookie} from "../helpers/cookie";
 
 export const signUp = (email, password) => {
-    return Api.client.post("http://localhost:5000/api/v1/reg/pwd/email", {
+    return Api.client.post(`${API_PATH}/api/v1/reg/pwd/email`, {
         email, password
     }).catch(response => {
         const {dsc} = response;
@@ -11,7 +11,7 @@ export const signUp = (email, password) => {
 };
 
 export const logIn = (email, password) => {
-    return Api.client.post("http://localhost:5000/api/v1/login/pwd/email", {
+    return Api.client.post(`${API_PATH}/api/v1/login/pwd/email`, {
         email, password
     }).then((response) => {
         const {res} = response;

@@ -2,6 +2,8 @@ import axios from "axios";
 import {Cookie, getCookie} from "../helpers/cookie";
 import history from "../helpers/history";
 
+export const API_PATH = "http://localhost:5000";
+
 class ApiClient {
     axios;
 
