@@ -1,25 +1,44 @@
-.wrapper {
+@import "../../../../styles/variables";
+
+.markers {
   display: flex;
   flex-direction: column;
-
-  height: 50%;
+  height: 100%;
   overflow: auto;
-
-  border: 3px solid black;
-
-  &:global(.active) {
-    border-color: lightskyblue;
-  }
 }
 
 .marker {
   display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  padding-right: 10px;
+  height: 55px;
 
-  & > svg {
-    flex-shrink: 0;
+  & > .track {
+    width: 16px;
+    height: 100%;
+    background-color: $gray1;
+    margin-right: 16px;
+    position: relative;
+    top: 10px;
+
+    &:before {
+      content: " ";
+      height: 100%;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent 50%, #fff 50%);
+      background-size: 15px 15px;
+      position: absolute;
+      left: 7.5px;
+      top: 0;
+    }
+
+    & > .icon {
+      position: absolute;
+      top: -8px;
+      height: 16px;
+      width: 100%;
+      border: 2px solid white;
+      border-radius: 100%;
+      background-color: $gray1;
+    }
   }
 
   & > .data {
@@ -27,27 +46,50 @@
     flex-direction: column;
     align-items: flex-start;
     flex-grow: 1;
-    margin-right: 10px;
     overflow: hidden;
 
-    & > span {
+    & > .name, .address {
       width: 100%;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
     }
 
+    & > .name {
+      font-size: 14px;
+    }
+
     & > .address {
-      color: gray;
+      font-size: 12px;
+      color: $gray2;
     }
   }
-}
 
-.button {
-  cursor: pointer;
-  padding: 5px;
-}
+  & > .button {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    & > svg {
+      position: relative;
+      top: -3px;
+      left: 8px;
+    }
+  }
 
-.marker + .marker {
-  margin-top: 10px;
+  &.last {
+    & > .track {
+      height: 16px;
+      background-color: transparent;
+      &:before {
+        display: none;
+      }
+      & > .icon {
+        background-color: $blue1;
+      }
+    }
+
+    & .name {
+      color: $blue1;
+    }
+  }
 }

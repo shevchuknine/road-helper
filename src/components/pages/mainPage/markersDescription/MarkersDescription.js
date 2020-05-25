@@ -1,11 +1,7 @@
 import React, {Component, createRef, Fragment} from "react";
 import styles from "./MarkersDescription.module.scss";
-import IconFilledMarker from "../../../icons/IconFilledMarker";
-import IconCross from "../../../icons/IconCross";
-import Input from "../../../form/input/Input";
-import IconEdit from "../../../icons/IconEdit";
 import cx from "classnames";
-import IconRouteMarker from "../../../icons/IconRouteMarker";
+import IconBurger from "../../../icons/IconBurger";
 
 class MarkersDescription extends Component {
     static defaultProps = {
@@ -22,39 +18,46 @@ class MarkersDescription extends Component {
         }
     }
 
-    buildIcon = () => {
-        const {type} = this.props;
-
-        if (type === "poi") {
-            return <IconFilledMarker/>;
-        }
-
-        if (type === "route") {
-            return <IconRouteMarker/>;
-        }
+    buildLastEmptyMarker = () => {
+        const {points} = this.props;
+        return (
+            <div className={cx(styles.marker, styles.last)}>
+                <div className={styles.track}>
+                    <div className={styles.icon}/>
+                </div>
+                <div className={styles.data}>
+                    <span className={styles.name}>
+                        {points.length > 0 ? "Add next point" : "Add first point"}
+                    </span>
+                </div>
+            </div>
+        );
     };
 
     render() {
-        const {points, onEdit, onDelete, type, activeStorage, makeActive} = this.props;
+        const {points, onEdit, onDelete} = this.props;
 
         return (
-            <div className={cx(styles.wrapper, activeStorage === type && "active")} ref={this.scrollBar} onClick={makeActive}>
+            <div className={styles.markers} ref={this.scrollBar}>
                 {
-                    points.map((point, index) => {
+                    points.map(point => {
                         const {id, name, address} = point;
                         return (
                             <div key={id} className={styles.marker}>
-                                {this.buildIcon()}
+                                <div className={styles.track}>
+                                    <div className={styles.icon}/>
+                                </div>
                                 <div className={styles.data}>
                                     <span className={styles.name}>{name}</span>
                                     <span className={styles.address}>{address}</span>
                                 </div>
-                                {onEdit && <div className={styles.button} onClick={() => onEdit(point)}><IconEdit/></div>}
-                                <div className={styles.button} onClick={() => onDelete(point)}><IconCross/></div>
+                                {/*{onEdit && <div className={styles.button} onClick={() => onEdit(point)}><IconEdit/></div>}*/}
+                                <div className={styles.button} onClick={() => onDelete(point)}><IconBurger/></div>
                             </div>
                         );
                     })
                 }
+                {this.buildLastEmptyMarker()}
             </div>
         );
     }

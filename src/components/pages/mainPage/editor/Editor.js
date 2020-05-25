@@ -24,7 +24,7 @@ const sameCoordsPointCheck = (points, lon, lat) => {
 class Editor extends Component {
     state = {
         poi: [], // левая колонка, хранятся активные типы POI, которые оторажаются на карте
-        activeStorage: "poi",
+        activeStorage: "route", //todo: будет выпилено как только разберемся где редактировать poi
         pack: {},
         points: [],
         route: {},
@@ -40,8 +40,6 @@ class Editor extends Component {
             data: {}
         }
     };
-
-    makeActive = (activeStorage) => () => this.setState({activeStorage});
 
     onAddMarker = (lon, lat) => {
         const {pack: {id: packId}, points, route: {points: routePoints = []}, activeStorage} = this.state;
@@ -197,7 +195,7 @@ class Editor extends Component {
     };
 
     render() {
-        const {points, pack, poi, route: {points: routePoints = [], navi = []}, activeStorage} = this.state;
+        const {points, pack, poi, route: {points: routePoints = [], navi = []}} = this.state;
         return (
             <div className={styles.wrapper}>
                 <div className={styles.poiPanel}>
@@ -215,18 +213,12 @@ class Editor extends Component {
                                         onEdit={this.openPackEditPopup}
                     />
                     <div className={styles.descriptions}>
-                        <MarkersDescription points={points}
-                                            onDelete={this.onDeleteMarker}
-                                            onEdit={this.openPointEditPopup}
-                                            activeStorage={activeStorage}
-                                            type={"poi"}
-                                            makeActive={this.makeActive("poi")}
-                        />
+                        {/*<MarkersDescription points={points}*/}
+                                            {/*onDelete={this.onDeleteMarker}*/}
+                                            {/*onEdit={this.openPointEditPopup}*/}
+                        {/*/>*/}
                         <MarkersDescription points={routePoints}
                                             onDelete={this.onDeleteRouteMarker}
-                                            activeStorage={activeStorage}
-                                            type={"route"}
-                                            makeActive={this.makeActive("route")}
                         />
                     </div>
                 </div>

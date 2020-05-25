@@ -4,14 +4,13 @@
 }
 
 .poiPanel {
-  width: 100px;
+  width: 80px;
 }
 
 .panel {
-  width: 20%;
+  width: 480px;
   box-sizing: border-box;
-  padding: 20px 0 20px 10px;
-  border-right: 1px solid #ced4da;
+  padding: 24px;
 }
 
 .descriptions {
@@ -20,4 +19,5 @@
 
 .map {
   flex: 1;
+  background-color: #626262;
 }
