@@ -7,4 +7,9 @@
 5. `npm start`;
 6. go to `localhost:3000`.
 
+## Run static server with prod build
+
+1. `npm install -g serve` <- do it once to install package globally (after install on Node with NPM);
+2. run `build.ps1`;
+3. go to `localhost:3001`.
 
