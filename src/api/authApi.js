@@ -17,7 +17,7 @@ export const logIn = (email, password) => {
         const {res} = response;
         if (res) {
             const {token} = res;
-            const currentTimeWith30Minutes = new Date((new Date()).getTime() + 1000 * 60 * 30);
+            const currentTimeWith30Minutes = new Date((new Date()).getTime() + 1000 * 60 * 60 * 24);
             setCookie(Cookie.authorization, `Bearer ${token}`, {expires: currentTimeWith30Minutes});
         }
     }, (response) => {

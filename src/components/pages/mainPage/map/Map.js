@@ -16,8 +16,8 @@ export const mapItems = {
     poiMarker: {source: "OBI_poi-marker_source", layer: "OBI_poi-marker_layer"},
     routeMarker: {source: "OBI_route-marker_source", layer: "OBI_route-marker_layer"},
     route: {source: "OBI_route_source", layer: "OBI_route_layer"},
-    restaurant: {layer: "OBI_restaurant_layer"},
-    cafe: {layer: "OBI_cafe_layer"},
+    restaurant: {layer: "OBI_restaurant_layer", zoom: 13},
+    cafe: {layer: "OBI_cafe_layer", zoom: 15},
 };
 
 class Map extends Component {
@@ -41,13 +41,13 @@ class Map extends Component {
     };
 
     addLayer = (id, imageName, additionalData = {}) => {
+        // only when map loaded
         this._MAP.addLayer({
             id,
             type: "symbol",
             layout: {
                 "icon-image": imageName,
-                "icon-allow-overlap": true,
-                "icon-offset": [0, -20]
+                "icon-allow-overlap": true
             },
             ...additionalData
         });
@@ -72,23 +72,36 @@ class Map extends Component {
             this.addLayer(mapItems.poiMarker.layer, this.loadImage("poiMarker", IconFilledMarker), {source: mapItems.poiMarker.source});
 
             // сиине маркеры (маршрута)
+            const imageName = "routeMarker";
             this.addSource(mapItems.routeMarker.source);
-            this.addLayer(mapItems.routeMarker.layer, this.loadImage("routeMarker", IconRouteMarker), {source: mapItems.routeMarker.source});
+            this.addLayer(mapItems.routeMarker.layer, this.loadImage(imageName, IconRouteMarker), {
+                source: mapItems.routeMarker.source,
+                layout: {
+                    "icon-image": imageName,
+                    "icon-allow-overlap": true,
+                    "text-optional": true,
+                    "text-field": ["get", "title"],
+                    "text-font": ["Open Sans Bold"],
+                    "text-size": 18
+                },
+            });
 
             // рестораны
             this.addLayer(mapItems.restaurant.layer, this.loadImage("restaurantMarker", IconCarrot), {
                 source: "composite",
                 "source-layer": "poi_label",
                 filter: ["==", "type", "Restaurant"]
+
             });
             this._MAP.setLayoutProperty(mapItems.restaurant.layer, "visibility", "none");
 
+            this._MAP.getSource("composite").vectorLayers.find(i => i.id === "poi_label").minzoom = 0;
+            this._MAP.getSource("composite").vectorLayers.find(i => i.id === "poi_label").maxzoom = 24;
             // кафе
             this.addLayer(mapItems.cafe.layer, this.loadImage("cafeMarker", apple), {
                 source: "composite",
                 "source-layer": "poi_label",
-                filter: ["==", "type", "Cafe"],
-                visibility: "none"
+                filter: ["==", "type", "Cafe"]
             });
             this._MAP.setLayoutProperty(mapItems.cafe.layer, "visibility", "none");
 
@@ -103,7 +116,7 @@ class Map extends Component {
                     'line-cap': 'round'
                 },
                 paint: {
-                    'line-color': '#3887be',
+                    'line-color': '#0D44F5',
                     'line-width': [
                         "interpolate",
                         ["linear"],
@@ -125,17 +138,37 @@ class Map extends Component {
     buildSourceData = (points) => {
         return {
             type: "FeatureCollection",
-            features: points.map(point => {
+            features: points.slice(0).reverse().map((point, index, array) => {
                 const {loc: {lon, lat}} = point;
                 return {
                     type: "Feature",
                     geometry: {
                         type: "Point",
                         coordinates: [lon, lat]
+                    },
+                    properties: {
+                        title: array.length - index
                     }
                 };
             })
         };
+    };
+
+    togglePoiMarkers = (prevPoi, currentPoi) => {
+        const itemsToHide = prevPoi.filter(id => !currentPoi.includes(id));
+        const itemsToShow = currentPoi.filter(id => !prevPoi.includes(id));
+
+        itemsToHide.forEach(i => this._MAP.setLayoutProperty(i, "visibility", "none"));
+        itemsToShow.forEach(i => this._MAP.setLayoutProperty(i, "visibility", "visible"));
+
+        const lowestVisibleZoom = Math.min(Object.values(mapItems).reduce((res, {layer, zoom}) => {
+            return itemsToShow.includes(layer) ? [...res, zoom] : res;
+        }, []));
+        const currentZoom = this._MAP.getZoom();
+
+        if (currentZoom < lowestVisibleZoom) {
+            this._MAP.zoomTo(lowestVisibleZoom, {duration: (lowestVisibleZoom - currentZoom) * 650});
+        }
     };
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -155,8 +188,7 @@ class Map extends Component {
         }
 
         if (prevProps.poi !== poi) {
-            prevProps.poi.forEach(i => this._MAP.setLayoutProperty(i, "visibility", "none"));
-            poi.forEach(i => this._MAP.setLayoutProperty(i, "visibility", "visible"));
+            this.togglePoiMarkers(prevProps.poi, poi);
         }
     }
 
