@@ -2,6 +2,10 @@ import React, {Component} from "react";
 import styles from "./PoiPanel.module.scss";
 import {mapItems} from "../map/Map";
 
+/*
+* пока технический компонент для обновления видимых слоев poi.
+* не понятно, нужна ли будет эта функциональность в ближайшее время
+* */
 class PoiPanel extends Component {
     onClick = id => _ => {
         const {updatePoi} = this.props;

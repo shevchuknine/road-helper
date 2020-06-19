@@ -3,6 +3,10 @@ import styles from "./MarkersDescription.module.scss";
 import cx from "classnames";
 import IconBurger from "../../../icons/IconBurger";
 
+/*
+* компонент для отрисовки точек маршрута (он же использовался и для отрисовки сохраненных точек)
+* в теории, дальше, это должны быть разные компоненты.
+* */
 class MarkersDescription extends Component {
     static defaultProps = {
         points: []

@@ -2,7 +2,7 @@ import React, {Component, Fragment} from "react";
 import styles from "./Editor.module.scss";
 import Map from "../map/Map";
 import MarkersDescription from "../markersDescription/MarkersDescription";
-import {fetchForwardGeocoding, fetchRoute} from "../../../../api/mapApi";
+import {fetchForwardGeocoding, fetchRoute, getDatasets} from "../../../../api/mapApi";
 import Input from "../../../form/input/Input";
 import PackageDescription from "../packageDescription/PackageDescription";
 import {deleteMarker, getMarkers, getPackage, getRoutes, putMarker, putRoute} from "../../../../api/dataApi";
@@ -14,6 +14,10 @@ import PackEditPopup from "../../../popups/packEditPopup/PackEditPopup";
 import RouteDescription from "../routeDescription/RouteDescription";
 import PoiPanel from "../poiPanel/PoiPanel";
 
+/*
+* была бага, которая при двойном клике добавляла две точки на одну и ту же позицию.
+* метод для проверки существующей точки на этих кординатах
+* */
 const sameCoordsPointCheck = (points, lon, lat) => {
     return points.find(point => {
         const {loc: {lon: existedLon, lat: existedLat}} = point;
@@ -23,11 +27,40 @@ const sameCoordsPointCheck = (points, lon, lat) => {
 
 class Editor extends Component {
     state = {
-        poi: [], // левая колонка, хранятся активные типы POI, которые оторажаются на карте
-        activeStorage: "route", //todo: будет выпилено как только разберемся где редактировать poi
+        /*
+         * хранит в себе идентификаторы активных слоев poi
+         * из объекта mapItems src/components/pages/mainPage/map/Map.js
+         * */
+        poi: [],
+        /*
+        * временный флаг, использовался для того, чтобы определять куда добавить новую точку:
+        * в точки маршрута или в сохраненные точки.
+        * на данный момент используется всегда для добавления точек в маршрут.
+        * в методе onAddMarker есть описание функциональности для двух случаев (точек маршрута и сохраненных).
+        * как только решится вопросю, где в UI будут находиться сохраненные точки - можно смело удалять.
+        * */
+        activeStorage: "route",
+        /*
+        * информация о пакете (id, name и т.д.)
+        * был момент, когда пакет можно было редактировать, для этого уже реализованы некоторые методы.
+        * на данный момент эту функциональность убрали.
+        * сейчас эти данные используются только для чтения.
+        * */
         pack: {},
+        /*
+        * сохраненные точки, о которых речь была выше.
+        * */
         points: [],
+        /*
+        * маршрут, о котором тоже была речь выше)
+        * точки хранятся внутренним полем в этом объекте
+        * */
         route: {},
+        /*
+         * общий формат данных для работы с попапами.
+         * для экономии времени остался тут, но по-хорошему должен быть вынесен
+         * куда-нибудь ближе к корню в связке с контекстом или редаксом
+         * */
         pointsAmountPopup: {
             isOpen: false
         },
@@ -81,6 +114,10 @@ class Editor extends Component {
     };
 
     updateNavi = () => {
+        /*
+        * navi - это изображение маршута по точкам (именно весь роут, а не отдельные точки, поставленные пользователем).
+        * спускается в компонент Map и там отрисовывается отдельно.
+        * */
         const {route: {points = []}} = this.state;
 
         fetchRoute(points.map(point => point.loc)).then(navi => {

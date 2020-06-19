@@ -38,3 +38,21 @@ export const fetchForwardGeocoding = (lon, lat) => {
 export const buildStaticImageOfMap = ({lon, lat}) => {
     return `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/${lon},${lat},3,0/140x120?access_token=${ACCESS_TOKEN}`;
 };
+
+export const getDatasets = () => {
+    const url = `https://api.mapbox.com/datasets/v1/shevchuknine?access_token=${ACCESS_TOKEN}`;
+    return Api.client.get(url).then(response => {
+        console.log(response);
+    });
+};
+
+export const getTilesets = () => {
+    var tileset = 'shevchuknine.ckay1g3y4092429mfr2duhjrj-0g00y'; // replace this with the ID of the tileset you created
+    var radius = 100000; // 1609 meters is roughly equal to one mile
+    var limit = 100000;
+    var query = 'https://api.mapbox.com/v4/' + tileset + '/tilequery/' + "30.52, 50.45" + '.json?radius=' + radius + '&limit= ' + limit + ' &access_token=' + ACCESS_TOKEN;
+
+    return Api.client.get(query).then(response => {
+        console.log(response);
+    });
+};

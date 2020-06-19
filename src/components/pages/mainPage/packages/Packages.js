@@ -7,7 +7,6 @@ import IconCross from "../../../icons/IconCross";
 import Popup from "../../../popups/popup/Popup";
 import InformationPopup from "../../../popups/informationPopup/InformationPopup";
 
-//todo: remove
 const getRandomInRange = (from, to) => {
     return (Math.random() * (to - from) + from).toFixed(4) * 1;
 }
@@ -19,6 +18,12 @@ const generateRandomCoords = () => {
     return {lon, lat};
 };
 
+/*
+* imgSrc ссылка на статическую картинку с изображением "местности".
+* основная задача тут была потестить эту функциональность карты (генерации картинки, а не загрузка карты)
+* сейчас использует рандомные координаты, в будущем должно работать с центральными координатами региона,
+* на котором юзер строит маршрут.
+* */
 class Package extends Component {
     imgSrc = buildStaticImageOfMap(generateRandomCoords());
 
@@ -41,6 +46,9 @@ class Package extends Component {
     }
 };
 
+/*
+* Страница пакетов, которая отображает наборы маршрутов, точек и т.д.
+* */
 class Packages extends Component {
     state = {
         packages: []
